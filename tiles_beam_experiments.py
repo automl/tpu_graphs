@@ -82,6 +82,8 @@ def get_parameter_sweep_1() -> list[train_args.TrainArgs]:
               args['learning_rate'] = lr
               args['run_id'] = run_id
               args['batch_size'] = batch
+              args['results_csv'] = ''
+              args['out_dir'] = './out/tpugraphs_tiles_beam'
               all_args.append(train_args.TrainArgs(**args))
 
   return all_args

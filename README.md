@@ -13,6 +13,10 @@ Layout configurations control how tensors are laid out in the physical memory, b
 the dimension order of each input and output of an operation node. A tile configuration controls
 the tile size of each fused subgraph.
 
+<details>
+<summary>Datafile Details</summary>
+<br>
+
 The dataset is located at http://download.tensorflow.org/data/tpu_graphs/v0.
 You can use `wget` or `curl` command to download files.
 
@@ -23,15 +27,19 @@ You can use `wget` or `curl` command to download files.
   - {source}: `xla` or `nlp`
   - {search}: `default` or `random`
   - {split}: `train`, `valid`, or `test`
+</details>
 
 To download all files, you may run (from a clone of this directory):
-
 ```sh
 python3 echo_download_commands.py | bash
 ```
 
 Removing the last pipe (`| bash`) shows the commands for downloading the dataset
 (a few `curl` commands followed by `tar xvf`).
+
+<details>
+<summary>Specific Commands</summary>
+<br>
 
 To copy data for a specific collection, e.g. the layout:xla:random collection, run:
 
@@ -46,6 +54,7 @@ tar xvf npz_layout_xla_random_train.tar
 tar xvf npz_layout_xla_random_valid.tar
 tar xvf npz_layout_xla_random_test.tar
 ```
+</details>
 
 For a description of these files, please scroll towards the end of this page
 ("Dataset File Description").
@@ -93,12 +102,19 @@ For subsequent runs, simply activate the same environment with `conda activate t
 
 The following command will train a GraphSAGE model with the early join of config features on a small subset of data:
 ```
-python tiles_train.py --model=EarlyJoinSAGE --toy_data=True
+python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles --toy_data=True
 ```
 
 To train on the full dataset, run:
 ```
-python tiles_train.py --model=EarlyJoinSAGE
+python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles
+```
+
+Note for L3S hackathon: Running on the full dataset with full epochs (100 by default) can result in 
+memory issues and long run times. The flag `--max_configs 1000` samples only this many configurations 
+per graph, while the flag `--epochs 50` restricts the number of epochs to run:
+```
+python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles  --epochs 50 --max_configs 1000
 ```
 
 The current code supports training on a CPU.
@@ -106,7 +122,7 @@ Once the training is done, it will produce a jsonz file with the prefix "run_".
 This file will contain the overall top-K errors (see the definition in the paper)
 on kernels in the validation set. To view the result:
 ```
-zcat run_xxx.jsonz > run_xxx.json
+zcat out/tpugraphs_tiles/run_xxx.jsonz > out/tpugraphs_tiles/run_xxx.json
 ```
 
 Search for:
@@ -116,7 +132,8 @@ Search for:
 where 0.2 error means 20% error.
 
 Further, the training code will output a `.csv` file containing top-5 rankings
-of configurations over test set. By default, the csv will be written to:
+of configurations over the test set. This is what will be part of the submission file.
+By default, the csv will be written to:
 ```
 ~/out/tpugraphs_tiles/results_<timestamp>.csv
 ```
@@ -125,17 +142,27 @@ refer to
 [train_args.py](https://github.com/google-research-datasets/tpu_graphs/blob/main/tpu_graphs/baselines/tiles/train_args.py)
 for a list of flags.
 
-#### Sweep hyperparameters
+#### Sweep hyperparameters via grid search
 
-Run Apache Beam locally (for debugging):
+<details>
+<summary>Script to train the tile model over a grid of hyperparameter values</summary>
+<br>
+
+Run Apache Beam locally (will run only two configurations in debugging mode):
+
 ```
 python tiles_beam_experiments.py --debug
 ```
 
 To run the pipeline on Google Cloud, please follow [this instruction](https://cloud.google.com/dataflow/docs/quickstarts/create-pipeline-python).
+</details>
 
+#### Compare models
 
-#### Evaluate model
+<details>
+<summary>Script for printing the validation performance for multiple models</summary>
+<br>
+
 Once the training is done, the training output directory specified with
 `--out_dir` (~/out/tpugraphs_tiles by default) will contain a model directory,
 whose name starts with the prefix `model_`.
@@ -157,9 +184,16 @@ This script will print out per-program top-K errors for kernels in the validatio
 ```
 
 Currently, the evaluation script does not produce the ranking `.csv` file.
-
+</details>
 
 ### Model on `layout:{xla|nlp}:{random|default}` collections
+
+Note for L3S hackathon: We do not recommend using the layout collections, as they have 
+high runtimes and memory requirements.
+
+<details>
+<summary>Layout Collections</summary>
+<br>
 
 You may run the GST model (used in the paper), which is available at:
 https://github.com/kaidic/GST.
@@ -204,6 +238,7 @@ followed by inference on the test set. The inference step produces a ranking
 ~/out/tpugraphs_layout/results_<timestamp>_<source>_<search>.csv
 ```
 Example: `~/out/tpugraphs_layout/results_1693169615975_xla_default.csv`.
+</details>
 
 NOTE: You can run `python combine_csvs.py` to produces the final CSV that can
 be submitted to our
@@ -220,6 +255,10 @@ the training pipelines (i.e. `~/out/tpugraphs_layout` for `layout_train.py`, and
 ## Dataset File Description
 
 ### Tiles Collection `.npz` files
+
+<details>
+<summary>Tiles Collection Details</summary>
+<br>
 
 We provide our dataset as `.npz` files. Download instructions are in Section
 "Copy dataset files".
@@ -252,8 +291,14 @@ loaded with `d = dict(np.load("npz/tile/xla/train/<pick 1>.npz"))`):
 
 Finally, for the tile collection, your job is to predict the indices of the best
 configurations (i.e., ones leading to the smallest `d["config_runtime"] / d["config_runtime_normalizers"]`).
+</details>
+
 
 ### Layout Collections `.npz` files
+
+<details>
+<summary>Layout Collection Details</summary>
+<br>
 
 Suppose a `.npz` file stores a graph (representing the entire program) with `n`
 nodes and `m` edges. In addition, suppose we compile the graph with `c`
@@ -287,11 +332,14 @@ functions in a program). Essentially, nodes `d["node_splits"][i]` to
 partition the graph into multiple segments, this information may be useful,
 e.g., putting nodes from the same computation in the same partition. However,
 you may compute your own partitioning (e.g., using METIS) as well.
+</details>
 
 
 ## Features
 
-### Node Features
+<details>
+<summary>Node Features</summary>
+<br>
 
 To extract a node feature vector, we either copy values from various fields in an XLA’s HLO instruction (a node in an HLO graph) as they are, or convert categorical values using one-hot encoding. To convert an unbounded list of numbers (e.g. tensor shape) to a fixed-size vector, we truncate the list to six elements and include the summation and/or product of all elements in the list (e.g., the product of dimension sizes represents the volume of the tensor). In our dataset, none of the tensors has more than six dimensions.
 
@@ -457,8 +505,12 @@ The following describe each element at a particular index in the node feature ve
 Suffix _i, where i is an integer, indicates the information for the tensor dimension i. If a tensor has N dimensions, feature values of _i are set to 0 if i >= N (0 padding). Suffix _sum is the summation of the feature values across all dimensions. Suffix _product is the product of the feature values across all dimensions.
 
 The source code of the feature extractor can be found [here](https://github.com/google-research-datasets/tpu_graphs/blob/main/tpu_graphs/process_data/xla/featurizers.h#L542), which extracts features/attributes from HloProto defined [here](https://github.com/tensorflow/tensorflow/blob/r2.10/tensorflow/compiler/xla/service/hlo.proto).
+</details>
 
-### Tile Config Features
+
+<details>
+<summary>Tile Config Features</summary>
+<br>
 
 The following describe each element at a particular index in the tile config feature vector.
 
@@ -493,8 +545,11 @@ The following describe each element at a particular index in the tile config fea
 ```
 
 Note that input_bounds are usually set to 0 because they can be inferred by the compiler from output_bounds (and kernel_bounds). If a tensor has N dimensions, feature values of _i are set to 0 if i >= N (0 padding).
+</details>
 
-### Layout Config Features
+<details>
+<summary>Layout Config Features</summary>
+<br>
 
 The following describe each element at a particular index in the per-node layout config feature vector.
 
@@ -523,9 +578,12 @@ The following describe each element at a particular index in the per-node layout
 ```
 
 If a tensor has N dimensions, feature values of _i are set to -1 if i >= N (-1 padding). A layout determines the order of minor-to-major tensor dimensions. For example, the layout of {1, 0, 2, -1, -1, -1} of a 3D tensor indicates that dimension 1 is the most minor (elements of the most minor dimension are consecutive in the physical space) and dimension 2 is the most major.
+</details>
 
 
-## Graph Feature Extraction
+<details>
+<summary>Graph Feature Extraction</summary>
+<br>
 
 This section explains how to customize the node feature extraction.
 The raw graph data is saved in protobuf format, defined as `ModuleTuningData` in
@@ -554,16 +612,24 @@ In particular, the original graph in `npz/.../xxx.npz` can be found in `pb/.../x
 Therefore, you can use graph features produced by this function instead of
 (node_opcode, node_feat, edge_index, node_config_ids, node_splits) attributes
 from the .npz file.
+</details>
 
-### Testing in C++
+
+<details>
+<summary>Testing in C++</summary>
+<br>
 
 To test that your code is working properly within C++, you can run:
+
 ```
 bazel-5.4.1 build -c opt tpu_graphs/process_data/xla/data_main --experimental_repo_remote_exec --sandbox_debug --verbose_failures
 ./bazel-bin/tpu_graphs/process_data/xla/data_main <path_to_raw_protobuf_data>.pb
 ```
+</details>
 
-### Troubleshooting
+<details>
+<summary>Troubleshooting</summary>
+<br>
 
 If you get `libstdc++.so.6: version GLIBCXX_3.4.30 not found ` during
 `import graph_features`, you can follow these steps.
@@ -574,3 +640,4 @@ cp /usr/lib/i386-linux-gnu/libstdc++.so.6.0.30 /usr/local/google/home/{user}/min
 rm /usr/local/google/home/{user}/miniconda3/envs/tpugraphs/lib/libstdc++.so.6
 sudo ln -sf /usr/local/google/home/mangpo/miniconda3/envs/tpugraphs/lib/libstdc++.so.6.0.30 /usr/local/google/home/mangpo/miniconda3/envs/tpugraphs/lib/libstdc++.so.6
 ```
+</details>

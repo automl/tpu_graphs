@@ -218,7 +218,7 @@ class NpzDatasetPartition:
     print('loaded from ' + cache_file)
 
   def add_npz_file(
-      self, tile_id: str, npz_file: np.lib.npyio.NpzFile, min_configs: int = 2):
+      self, tile_id: str, npz_file: np.lib.npyio.NpzFile, min_configs: int = 2, max_configs=-1):
     """Copies data from npz file into this class instance.
 
     After finishing all calls `add_npz_file()`, user must invoke `finalize()`.
@@ -228,12 +228,24 @@ class NpzDatasetPartition:
       npz_file: Output of np.load on a file from the TpuGraphs Tiles dataset.
       min_configs: The file be incorporated only if the number of module
         configurations is equal or greater than this.
+      max_configs: If >0, only this many configurations will be sampled for the
+        graph.
     """
     npz_data = dict(npz_file.items())
     num_configs = npz_data['config_feat'].shape[0]
     if num_configs < min_configs:
       print('skipping tile with only %i configurations' % num_configs)
       return
+    if max_configs > 0 and num_configs > max_configs:
+      third = max_configs // 3
+      keep_indices = np.concatenate([
+          npz_data['argsort_config_runtime'][:third],  # Good configs.
+          npz_data['argsort_config_runtime'][-third:],  # Bad configs.
+          np.random.choice(
+              npz_data['argsort_config_runtime'][third:-third],
+              max_configs - 2 * third)
+      ], axis=0)
+      num_configs = max_configs
     for key, ndarray in npz_data.items():
       self._data_dict[key].append(ndarray)
     self._data_dict['tile_id'].append(np.array(tile_id))
@@ -293,7 +305,7 @@ class NpzDatasetPartition:
 
 
 def get_npz_split(
-    split_path: str, min_configs=2, cache_dir=None) -> NpzDatasetPartition:
+    split_path: str, min_configs=2, max_configs=-1, cache_dir=None) -> NpzDatasetPartition:
   """Returns data for a single partition."""
   glob_pattern = os.path.join(split_path, '*.npz')
   files = tf.io.gfile.glob(glob_pattern)
@@ -307,7 +319,7 @@ def get_npz_split(
     if not tf.io.gfile.exists(cache_dir):
       tf.io.gfile.makedirs(cache_dir)
     filename_hash = hashlib.md5(
-        f'{split_path}:{min_configs}:{_TOY_DATA.value}'.encode()).hexdigest()
+        f'{split_path}:{min_configs}:{max_configs}:{_TOY_DATA.value}'.encode()).hexdigest()
     cache_filename = os.path.join(cache_dir, f'{filename_hash}-cache.npz')
     print('dataset cache file: ', cache_filename)
 
@@ -318,7 +330,7 @@ def get_npz_split(
     for filename in tqdm.tqdm(files):
       np_data = np.load(tf.io.gfile.GFile(filename, 'rb'))
       tile_id = os.path.splitext(os.path.basename(filename))[0]
-      npz_dataset.add_npz_file(tile_id, np_data, min_configs=min_configs)
+      npz_dataset.add_npz_file(tile_id, np_data, min_configs=min_configs, max_configs=max_configs)
     npz_dataset.finalize()
     if cache_filename:
       npz_dataset.save_to_file(cache_filename)
@@ -377,7 +389,7 @@ class NpzDataset(NamedTuple):
 
 
 def get_npz_dataset(
-    root_path: str, min_train_configs=-1,
+    root_path: str, min_train_configs=-1, max_train_configs=-1,
     cache_dir: 'None | str' = None) -> NpzDataset:
   """Returns {train, test, validation} partitions of tiles dataset collection.
 
@@ -389,15 +401,19 @@ def get_npz_dataset(
       'test' and 'valid'.
     min_train_configs: If > 0, then tile examples will be filtered to have at
       least this many configurations (features and runtimes).
+    max_train_configs: Training and validation graphs will be truncated to
+      include only this many configurations. Set this according to your
+      available device memory. If you have lots of memory, you may set to -1,
+      to include all configurations for all {train, validation} graphs.
     cache_dir: If given, the many files for each of {train, test, validation}
       will be stored as one file (makes loading faster, for future runs).
   """
   npz_dataset = NpzDataset(
       train=get_npz_split(
-          os.path.join(root_path, 'train'), min_configs=min_train_configs,
+          os.path.join(root_path, 'train'), min_configs=min_train_configs, max_configs=max_train_configs,
           cache_dir=cache_dir),
       validation=get_npz_split(
-          os.path.join(root_path, 'valid'), cache_dir=cache_dir),
+          os.path.join(root_path, 'valid'), max_configs=max_train_configs, cache_dir=cache_dir),
       test=get_npz_split(
           os.path.join(root_path, 'test'), cache_dir=cache_dir))
   npz_dataset.normalize()

@@ -93,7 +93,7 @@ def train(args: train_args.TrainArgs):
   data_root_dir = os.path.expanduser(_DATA_ROOT.value)
   num_configs = args.configs
   dataset_partitions = data.get_npz_dataset(
-      data_root_dir, min_train_configs=num_configs,
+      data_root_dir, min_train_configs=num_configs, max_train_configs=args.max_configs,
       cache_dir=os.path.expanduser(_CACHE_DIR.value))
   batch_size = args.batch_size
   train_ds = (

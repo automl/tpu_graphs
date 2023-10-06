@@ -38,6 +38,13 @@ _CLIP_NORM = flags.DEFINE_float(
     'clip_norm', 1e-3, 'Max L2 norm of gradient per tensor.')
 _NUM_CONFIGS = flags.DEFINE_integer(
     'configs', 10, 'Number of configurations to consider in ranked-list.')
+_MAX_CONFIGS = flags.DEFINE_integer(
+    'max_configs', -1,
+    'Maximum number of configurations in train and validation partitions to '
+    'keep during pre-processing step. This reduces the dataset size. Only '
+    'active if > 0. The configurations will be selected as follows. Best and '
+    'worst configurations will be selected, as will as some in the middle. '
+    'This option is useful to make the dataset fit in memory.')
 _BATCH = flags.DEFINE_integer(
     'batch', 10,
     'Batch size: number of subgraphs, each with `--configs` configurations.')
@@ -79,6 +86,7 @@ class TrainArgs(NamedTuple):
   eval_every: int  # DEPRECATED. To be removed.
   batch_size: int
   configs: int
+  max_configs: int
   early_stop: int
 
   # Optimization.
@@ -127,7 +135,7 @@ def _get_results_csv_or_default() -> str:
 def get_args() -> TrainArgs:
   return TrainArgs(
       epochs=_EPOCHS.value, eval_every=_EVAL_EVERY.value, losses=_LOSSES.value,
-      batch_size=_BATCH.value, configs=_NUM_CONFIGS.value,
+      batch_size=_BATCH.value, configs=_NUM_CONFIGS.value, max_configs=_MAX_CONFIGS.value,
       early_stop=_EARLY_STOP.value, learning_rate=_LEARNING_RATE.value,
       clip_norm=_CLIP_NORM.value, model=_MODEL.value,
       model_kwargs_json=_MODEL_KWARGS_JSON.value, test_mode=_TEST_MODE.value,
