@@ -233,6 +233,7 @@ class NpzDatasetPartition:
     """
     npz_data = dict(npz_file.items())
     num_configs = npz_data['config_feat'].shape[0]
+    npz_data['argsort_config_runtime'] = np.argsort(npz_data['config_runtime'])
     if num_configs < min_configs:
       print('skipping tile with only %i configurations' % num_configs)
       return
@@ -246,6 +247,11 @@ class NpzDatasetPartition:
               max_configs - 2 * third)
       ], axis=0)
       num_configs = max_configs
+      npz_data['config_feat'] = npz_data['config_feat'][keep_indices]
+      npz_data['config_runtime'] = npz_data['config_runtime'][keep_indices]
+      npz_data['config_runtime_normalizers'] = npz_data['config_runtime_normalizers'][keep_indices]
+      npz_data['argsort_config_runtime'] = np.argsort(  # re-sort.
+          npz_data['config_runtime'])
     for key, ndarray in npz_data.items():
       self._data_dict[key].append(ndarray)
     self._data_dict['tile_id'].append(np.array(tile_id))

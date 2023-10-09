@@ -138,10 +138,10 @@ python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles
 
 Note for L3S hackathon: Unless you have access to a cluster, we do not recommend to run on the full dataset 
 with full epochs (100 by default), as this can result in memory issues and long run times. 
-The flag `--max_configs 1000` samples only this many configurations per graph, while the flag `--epochs 50` 
+The flag `--max_configs 500` samples only this many configurations per graph, while the flag `--epochs 20` 
 restricts the number of epochs to run. We recommend using these to limit runtime and required memory:
 ```
-python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles  --epochs 50 --max_configs 1000
+python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles --epochs 20 --max_configs 500
 ```
 
 The current code supports training on a CPU.
