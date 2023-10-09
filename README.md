@@ -1,5 +1,9 @@
 # TpuGraphs: A Performance Prediction Dataset on Large Tensor Computational Graphs
 
+Note for L3S hackathon: You can find the description of the Kaggle competition related to this data, 
+including some background on the task, here:
+https://www.kaggle.com/competitions/predict-ai-model-runtime
+
 TpuGraphs is a performance prediction dataset on full tensor programs, represented as computational graphs, running on Tensor Processing Units (TPUs). Each graph in the dataset represents the main computation of a machine learning workload, e.g., a training epoch or an inference step. Each data sample contains a computational graph, a compilation configuration, and the execution time of the graph when compiled with the configuration. The graphs in the dataset are collected from open-source machine learning programs, featuring popular model architectures (e.g., ResNet, EfficientNet, Mask R-CNN, and Transformer).
 
 Please refer to our [paper](https://arxiv.org/abs/2308.13490) for more details about the importance and challenges of the dataset, how the dataset is generated, the model baselines, and the experimental results. Please cite the paper when using this dataset.
@@ -29,12 +33,25 @@ You can use `wget` or `curl` command to download files.
   - {split}: `train`, `valid`, or `test`
 </details>
 
-To download all files, you may run (from a clone of this directory):
+**BEFORE the Hackathon: Data Download** 
+
+Clone this repository via
+```sh
+git clone git@github.com:automl/tpu_graphs.git
+```
+
+Move into the cloned repository via
+```sh
+cd tpu_graphs
+```
+
+To download all files, run (from the clone of this directory):
 ```sh
 python3 echo_download_commands.py | bash
 ```
 
-Removing the last pipe (`| bash`) shows the commands for downloading the dataset
+The data will be downloaded into your home directory (please leave it there,
+else you will need to adapt paths in the scripts). Removing the last pipe (`| bash`) shows the commands for downloading the dataset
 (a few `curl` commands followed by `tar xvf`).
 
 <details>
@@ -67,6 +84,10 @@ respectively, for training models on the collections `tile:xla` and
 infer predictions on the test set. By default, the trained models are saved and
 alongside a `csv` file containing inference on the test set.
 
+<details>
+<summary>Combining Inference Files into one CSV for Submission</summary>
+<br>
+
 To combine all five inference files into one CSV to submit to our
 [Kaggle competition](https://kaggle.com/competitions/predict-ai-model-runtime),
 run:
@@ -77,9 +98,9 @@ python combine_csvs.py
 
 NOTE: The above command will look for files produced by `tiles_train.py` and
 `layout_train.py`
+</details>
 
-
-#### Python environment setup with Conda
+#### Optionally BEFORE the Hackathon: Python Environment Setup with Conda
 
 ```sh
 conda create -n tpugraphs python=3.10
@@ -105,14 +126,20 @@ The following command will train a GraphSAGE model with the early join of config
 python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles --toy_data=True
 ```
 
+<details>
+<summary>Training on the Full Dataset</summary>
+<br>
+
 To train on the full dataset, run:
 ```
 python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles
 ```
+</details>
 
-Note for L3S hackathon: Running on the full dataset with full epochs (100 by default) can result in 
-memory issues and long run times. The flag `--max_configs 1000` samples only this many configurations 
-per graph, while the flag `--epochs 50` restricts the number of epochs to run:
+Note for L3S hackathon: Unless you have access to a cluster, we do not recommend to run on the full dataset 
+with full epochs (100 by default), as this can result in memory issues and long run times. 
+The flag `--max_configs 1000` samples only this many configurations per graph, while the flag `--epochs 50` 
+restricts the number of epochs to run. We recommend using these to limit runtime and required memory:
 ```
 python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles  --epochs 50 --max_configs 1000
 ```
@@ -145,7 +172,7 @@ for a list of flags.
 #### Sweep hyperparameters via grid search
 
 <details>
-<summary>Script to train the tile model over a grid of hyperparameter values</summary>
+<summary>Grid Search Script</summary>
 <br>
 
 Run Apache Beam locally (will run only two configurations in debugging mode):
@@ -158,10 +185,6 @@ To run the pipeline on Google Cloud, please follow [this instruction](https://cl
 </details>
 
 #### Compare models
-
-<details>
-<summary>Script for printing the validation performance for multiple models</summary>
-<br>
 
 Once the training is done, the training output directory specified with
 `--out_dir` (~/out/tpugraphs_tiles by default) will contain a model directory,
@@ -184,12 +207,11 @@ This script will print out per-program top-K errors for kernels in the validatio
 ```
 
 Currently, the evaluation script does not produce the ranking `.csv` file.
-</details>
 
 ### Model on `layout:{xla|nlp}:{random|default}` collections
 
-Note for L3S hackathon: We do not recommend using the layout collections, as they have 
-high runtimes and memory requirements.
+Note for L3S hackathon: Unless you have access to a cluster, we do not recommend using the layout collections, 
+as they have high runtimes and memory requirements.
 
 <details>
 <summary>Layout Collections</summary>
@@ -240,6 +262,10 @@ followed by inference on the test set. The inference step produces a ranking
 Example: `~/out/tpugraphs_layout/results_1693169615975_xla_default.csv`.
 </details>
 
+<details>
+<summary>Combining Inference Files into one CSV for Submission</summary>
+<br>
+
 NOTE: You can run `python combine_csvs.py` to produces the final CSV that can
 be submitted to our
 [Kaggle competition](https://kaggle.com/competitions/predict-ai-model-runtime).
@@ -250,7 +276,7 @@ specify them as flag arguments. By default, `combine_csvs.py` will choose the
 most-recent timestamp files, searching in the default directories produced by
 the training pipelines (i.e. `~/out/tpugraphs_layout` for `layout_train.py`, and
 `~/out/tpugraphs_tiles/` for `tiles_train.py`).
-
+</details>
 
 ## Dataset File Description
 
