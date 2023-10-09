@@ -1,6 +1,12 @@
 # TpuGraphs: A Performance Prediction Dataset on Large Tensor Computational Graphs
 
-Note for L3S hackathon: You can find the description of the Kaggle competition related to this data, 
+### Notes for L3S Hackathon: 
+
+- **SMAC Tutorial:** Before diving into the Kaggle competition, we start with a tutorial session on SMAC: 
+https://colab.research.google.com/drive/1-Z8ROMLSJFKq-LtXdyGMPt2BrCDVBi3q?usp=sharing
+
+
+- **Kaggle Competition**: You can find the description of the Kaggle competition related to this data, 
 including some background on the task, here:
 https://www.kaggle.com/competitions/predict-ai-model-runtime
 
