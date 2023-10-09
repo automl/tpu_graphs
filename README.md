@@ -123,7 +123,7 @@ For subsequent runs, simply activate the same environment with `conda activate t
 
 The following command will train a GraphSAGE model with the early join of config features on a small subset of data:
 ```
-python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles --toy_data=True
+python tiles_train.py --model=EarlyJoinSAGE --out_dir=./out/tpugraphs_tiles --toy_data=True
 ```
 
 <details>
@@ -132,16 +132,16 @@ python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles --to
 
 To train on the full dataset, run:
 ```
-python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles
+python tiles_train.py --model=EarlyJoinSAGE --out_dir=./out/tpugraphs_tiles
 ```
 </details>
 
 Note for L3S hackathon: Unless you have access to a cluster, we do not recommend to run on the full dataset 
 with full epochs (100 by default), as this can result in memory issues and long run times. 
-The flag `--max_configs 500` samples only this many configurations per graph, while the flag `--epochs 20` 
+The flag `--max_configs=500` samples only this many configurations per graph, while the flag `--epochs=20` 
 restricts the number of epochs to run. We recommend using these to limit runtime and required memory:
 ```
-python tiles_train.py --model=EarlyJoinSAGE --out_dir ./out/tpugraphs_tiles --epochs 20 --max_configs 500
+python tiles_train.py --model=EarlyJoinSAGE --out_dir=./out/tpugraphs_tiles --epochs=20 --max_configs=500
 ```
 
 The current code supports training on a CPU.
@@ -158,8 +158,8 @@ Search for:
 ```
 where 0.2 error means 20% error.
 
-Further, the training code will output a `.csv` file containing top-5 rankings
-of configurations over the test set. This is what will be part of the submission file.
+Further, if the flag `--test_mode=predictions` is added, the training code will output a `.csv` file 
+containing top-10 rankings of configurations over the test set. This is what will be part of the submission file.
 By default, the csv will be written to:
 ```
 ~/out/tpugraphs_tiles/results_<timestamp>.csv

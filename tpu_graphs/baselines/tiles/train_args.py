@@ -56,12 +56,13 @@ _MODEL_KWARGS_JSON = flags.DEFINE_string(
     'model_kwargs_json', '{}',
     'JSON-serialized dictionary with model class constructor arguments.')
 _TEST_MODE = flags.DEFINE_enum(
-    'test_mode', 'predictions', ['metrics', 'predictions'],
+    'test_mode', 'notest', ['notest', 'metrics', 'predictions'],
     'Whether to compute test metrics or output predictions csv file. '
     'If set to "metrics", then test graphs must contain `config_runtimes` and '
     '`config_runtime_normalizers` and test metrics will be added to output '
     'file (written in `--out_dir`). If set to "predictions", then csv file '
-    'will be written containing predictions.')
+    'will be written containing predictions. If set to "notest", no test predictions'
+    'will be generated.')
 _OUTPUT_DIR = flags.DEFINE_string(
     'out_dir', '~/out/tpugraphs_tiles',
     'Output metrics and trained models will be written here.')

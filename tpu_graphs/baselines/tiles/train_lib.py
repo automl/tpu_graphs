@@ -183,6 +183,8 @@ def train(args: train_args.TrainArgs):
     for module_id, module_predictions in zip(module_ids, predictions):
       module_id = bytes(module_id).decode()
       run_info['test_predictions'][module_id] = module_predictions
+  elif args.test_mode == 'notest':
+      pass
 
   save_model(model, run_info, out_dir, args)
 
