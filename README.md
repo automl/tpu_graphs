@@ -120,6 +120,22 @@ pip install tensorflow-ranking
 conda clean --all
 ```
 
+NOTE: `pip install tensorflow-ranking` might force tensorflow to be updated with pip.
+This might result in an error: `tensorflow unable to convert function return value to a python type`
+In that case, you can recreate your conda environment and install all dependencies with the following commands:
+
+```sh
+conda create -n tpugraphs python=3.10
+conda activate tpugraphs
+
+conda install -c conda-forge tensorflow
+conda install -c conda-forge tqdm
+
+pip install tensorflow_gnn --pre
+pip install -U --no-deps tensorflow-ranking
+conda clean --all 
+```
+
 For subsequent runs, simply activate the same environment with `conda activate tpugraphs`.
 
 
