@@ -68,18 +68,18 @@ else you will need to adapt paths in the scripts). Removing the last pipe (`| ba
 <summary>Specific Commands</summary>
 <br>
 
-To copy data for a specific collection, e.g. the layout:xla:random collection, run:
+To copy data for a specific collection, e.g. the tile:xla collection, run:
 
 ```sh
 mkdir -p ~/data/tpugraphs
 cd ~/data/tpugraphs
 
-curl http://download.tensorflow.org/data/tpu_graphs/v0/npz_layout_xla_random_train.tar > npz_layout_xla_random_train.tar
-curl http://download.tensorflow.org/data/tpu_graphs/v0/npz_layout_xla_random_valid.tar > npz_layout_xla_random_valid.tar
-curl http://download.tensorflow.org/data/tpu_graphs/v0/npz_layout_xla_random_test.tar > npz_layout_xla_random_test.tar
-tar xvf npz_layout_xla_random_train.tar
-tar xvf npz_layout_xla_random_valid.tar
-tar xvf npz_layout_xla_random_test.tar
+curl http://download.tensorflow.org/data/tpu_graphs/v0/npz_tile_xla_train.tar > npz_tile_xla_train.tar
+curl http://download.tensorflow.org/data/tpu_graphs/v0/npz_tile_xla_valid.tar > npz_tile_xla_valid.tar
+curl http://download.tensorflow.org/data/tpu_graphs/v0/npz_tile_xla_test.tar > npz_tile_xla_test.tar
+tar xvf npz_tile_xla_train.tar
+tar xvf npz_tile_xla_valid.tar
+tar xvf npz_tile_xla_test.tar
 ```
 </details>
 
