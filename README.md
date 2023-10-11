@@ -2,6 +2,10 @@
 
 ### Notes for L3S Hackathon: 
 
+
+- **SMAC Slides:** https://docs.google.com/presentation/d/1F0XodycN-_-D4854iheAtSxcQQTSDQ4-l7LnK_pyor8/edit?usp=sharing
+
+
 - **SMAC Tutorial:** Before diving into the Kaggle competition, we start with a tutorial session on SMAC: 
 https://colab.research.google.com/drive/1-Z8ROMLSJFKq-LtXdyGMPt2BrCDVBi3q?usp=sharing
 
