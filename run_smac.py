@@ -24,8 +24,7 @@ def main(unused_argv: Sequence[str]) -> None:
 
     incumbent = smac.optimize()
     incumbent_cost = smac.validate(incumbent, seed=1235)
-    print(f"Incumbent cost: {incumbent_cost}")
-    print(f"Incumbent accuracy {1 - incumbent_cost}")
+    print(f"Incumbent error: {incumbent_cost}")
 
 
 if __name__ == '__main__':

@@ -41,9 +41,9 @@ _BASE_ARGS = {
     'validate_batches': 50,
     'eval_every': 2,
     'early_stop': 10,  # Stops after 10 epochs if val OPA does not improve.
-    'epochs': 500,
+    'epochs': 2,
     'configs': 8,
-    'max_configs': 500
+    'max_configs': 10
 }
 
 _DATA_ROOT = flags.DEFINE_string(
@@ -260,8 +260,7 @@ def train_for_smac(args: train_args.TrainArgs, seed):
         pass
 
     save_model(model, run_info, out_dir, args)
-    t = run_info['final_error']['val']
-    return run_info['final_error']['val']
+    return run_info['final_error']['val'][5]
 
 
 def train(args: train_args.TrainArgs):
