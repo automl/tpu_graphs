@@ -3,13 +3,17 @@ from tpu_graphs.baselines.tiles import train_lib
 
 from collections.abc import Sequence
 
-from absl import app
+from absl import app, logging
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+logging.set_verbosity(logging.FATAL)
 
 
 def main(unused_argv: Sequence[str]) -> None:
     scenario = Scenario(
         train_lib.get_config_space(),  # here we pass our search space.
-        n_trials=5,  # We want to run max 50 trials (combination of config and seed)
+        n_trials=10,  # We want to run max 50 trials (combination of config and seed)
         # deterministic objective function? i.e. do we expect to see noise in
         # our objective for different seeds (which is why we need to spend
         # trials on seeds and average here)
